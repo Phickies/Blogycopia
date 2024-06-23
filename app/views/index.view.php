@@ -1,7 +1,5 @@
-<!-- Main view -->
+<h><?=$data["heading"]?></h>
 
-<?php
+<p>This is the main page of Blogycopia</p>
 
-$text = $data["contents"];
-
-echo "$text";
+<a href="login.php">Go to login page</a>

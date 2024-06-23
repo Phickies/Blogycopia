@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Load .env variables file to php global variables.
  */
@@ -31,4 +30,9 @@ function loadEnv(string $filePath) : void{
 }
 
 
-loadEnv(__DIR__. "/.env");
+/**
+ * Check if is valid post method
+ */
+function is_valid_post_method(): bool {
+    return $_SERVER["REQUEST_METHOD"] == "POST";
+}
