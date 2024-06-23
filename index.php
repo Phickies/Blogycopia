@@ -1,13 +1,15 @@
 <?php
 
-require("controllers/app.php");
-
-$nameViewFile = "index";
+require("config.php");
+require("app/controllers/Controller.php");
+require("app/controllers/User.controller.php");
+require("app/models/Database.php");
+require("app/models/User.model.php");
+require("app/models/Blog.model.php");
 
 $contents = [
-    "title" => "HelloWorlds",
     "contents" => "This is the main page"
 ];
 
 
-render($nameViewFile, $contents);
+Controller::render("index", "Hello World", $contents);

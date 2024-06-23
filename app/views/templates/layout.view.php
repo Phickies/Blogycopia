@@ -9,6 +9,6 @@
     <title><?= $title ?></title>
 </head>
 <body>
-    <?php include("./views/$nameViewFile.view.php") ?>
+    <?php include("./app/views/$name_view_file.view.php") ?>
 </body>
 </html>

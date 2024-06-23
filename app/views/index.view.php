@@ -2,6 +2,6 @@
 
 <?php
 
-$text = $models["contents"];
+$text = $data["contents"];
 
 echo "$text";
