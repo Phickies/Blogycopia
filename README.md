@@ -1,0 +1,4 @@
+- Fixing the router
+- make the login and register work
+- establish the database
+- connecting the whole authentication work
