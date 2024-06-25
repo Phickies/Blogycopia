@@ -1,11 +1,12 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Database class for handling connection and data logic with DBMS
  */
 class Database {
 
-    private static $connection = null;
+    private $connection = null;
 
 
     private function __construct() {
@@ -31,7 +32,7 @@ class Database {
     /**
      * Establishing and returning connection with the DBMS
      */
-    public static function connect() {
+    public function connect() {
         if (self::$connection === null) {
             new Database();
         }

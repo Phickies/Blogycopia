@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * User class for defining user model
@@ -7,7 +8,7 @@
 class User extends Database{
 
     private function __construct() {}
-    public static function get_all() {
+    public function get_all() {
         $db = self::connect();
 
         if ($db == null || $db == false) {
@@ -25,7 +26,7 @@ class User extends Database{
     }
 
 
-    public static function get($username) {
+    public function get($username) {
         $db = self::connect();
 
         if ($db == null || $db == false) {
@@ -43,7 +44,7 @@ class User extends Database{
     }
 
 
-    public static function set($username, $email, $password) {
+    public function set($username, $email, $password) {
         $db = self::connect();
 
         if ($db == null || $db == false) {
@@ -59,12 +60,12 @@ class User extends Database{
     }
 
 
-    public static function update_username($username, $new_username) {
+    public function update_username($username, $new_username) {
 
     }
 
 
-    public static function update_email($username, $new_email) {
+    public function update_email($username, $new_email) {
 
     }
 

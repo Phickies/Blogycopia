@@ -2,4 +2,4 @@
 
 <p>This is the main page of Blogycopia</p>
 
-<a href="login.php">Go to login page</a>
+<a href="login">Go to login page</a>

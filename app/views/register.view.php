@@ -16,5 +16,5 @@
 
     <input type="submit" name="submit" value="register">
 
-    <a href="login.php">Back to login page</a>
+    <a href="login">Back to login page</a>
 </form>

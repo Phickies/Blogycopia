@@ -1,23 +1,26 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Controller for handling logic between databse and user end point
  */
 class Controller {
+
+    public function __construct(){}
     
     /**
      * Render front-end view
      */
-    public static function render(string $name_view_file, string $title = "No title", array $data = []) {
+    public function render(string $name_view_file, string $title = "No title", array $data = []) {
 
         extract($data);
         
-        $file_path = PATH_DIR . "/views/$name_view_file.view.php";
+        $file_path = BASE_DIR . "/views/$name_view_file.view.php";
 
         if (file_exists($file_path)) {
-            include(PATH_DIR . "/views/templates/layout.view.php");
+            include(BASE_DIR . "/views/templates/layout.view.php");
         } else {
-            include(PATH_DIR . "/views/templates/error.view.php");
+            include(BASE_DIR . "/views/templates/error.view.php");
         }
     }
 
@@ -25,7 +28,7 @@ class Controller {
     /**
      * Redirect to another resource pages
      */
-    public static function redirect(string $file_url) {
+    public function redirect(string $file_url) {
         header("Location: $file_url");
         die();
     }

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Blog class for defining blog post object
@@ -7,7 +8,7 @@
 class Blog extends Database {
 
     private function __construct() {}
-    public static function get_all() {
+    public function get_all() {
         $db = self::connect();
 
         if ($db == null || $db == false) {
@@ -25,7 +26,7 @@ class Blog extends Database {
     }
 
 
-    public static function get(string $search_string) {
+    public function get(string $search_string) {
         $db = self::connect();
 
         if ($db == null || $db == false) {
@@ -43,7 +44,7 @@ class Blog extends Database {
     }
 
 
-    public static function create(string $title, string $content): void{
+    public function create(string $title, string $content): void{
         $db = self::connect();
 
         if ($db == null || $db == false) {
@@ -59,17 +60,17 @@ class Blog extends Database {
     }
 
 
-    public static function update_content(int $title_id, string $new_content) {
+    public function update_content(int $title_id, string $new_content) {
 
     }
 
 
-    public static function update_title(int $title_id, string $new_title) {
+    public function update_title(int $title_id, string $new_title) {
 
     }
 
     
-    public static function delete(int $id) {
+    public function delete(int $id) {
 
     }
 }

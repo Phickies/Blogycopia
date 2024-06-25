@@ -1,13 +1,14 @@
 <?php
+declare(strict_types=1);
 
 /**
  * This is the control logic
  */
 class UserController extends Controller {
 
-    public static function login() {
+    public function login() {
 
-        if (!is_valid_post_method()) {
+        if (!$_SERVER["REQUEST_METHOD"] == "POST") {
             return;
         }
 
@@ -17,11 +18,11 @@ class UserController extends Controller {
         echo "$username, $password";
     }
 
-    public static function register() {
+    public function register() {
         echo "you registered";
     }
 
-    public static function delete() {
+    public function delete() {
         echo "you delete ur accout?";
     }
 }
