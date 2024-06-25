@@ -4,7 +4,9 @@ declare(strict_types=1);
 /**
  * This is the control logic
  */
-class UserController extends Controller {
+class UserController {
+
+    public function __construct(){}
 
     public function login() {
 
@@ -12,10 +14,10 @@ class UserController extends Controller {
             return;
         }
 
-        $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
+        $email = filter_input(INPUT_POST, "email", FILTER_SANITIZE_SPECIAL_CHARS);
         $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
 
-        echo "$username, $password";
+        echo "$email and $password";
     }
 
     public function register() {

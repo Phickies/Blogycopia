@@ -1,6 +1,6 @@
 <h1>Welcome to Blogycopia</h1>
 
-<form action="login.php?action=login" method="post">
+<form action="" method="post">
 
     <label for="email">Email:<br></label>
     <input type="email" name="email" required><br>

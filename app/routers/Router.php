@@ -46,7 +46,7 @@ class Router {
     }
 
 
-    private function getFilteredQuery(): array {
+    private function getFilteredQuery(): ?array {
         return $this->filter($this->retrivedQuery());
     }
 

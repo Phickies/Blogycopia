@@ -14,6 +14,10 @@ $router->route("GET", "/login", function() use ($controller) {
     $controller->render(name_view_file:"login", title:"Login");
 });
 
+$router->route("POST", "/login", function() use ($controller) {
+    $controller->user->login();
+});
+
 $router->route("GET", "/register", function() use ($controller) {
     $controller->render(name_view_file:"register", title:"Register");
 });

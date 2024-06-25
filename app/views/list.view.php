@@ -1,5 +1,3 @@
 <table>
-    <h1><?=$name?></h1>
-    <h2><?=$heading?></h2>
-    <p><?=$value?></p>
+    <h1><?php print_r($data) ?></h1>
 </table>

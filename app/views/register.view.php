@@ -1,6 +1,6 @@
 <h1>Registartion for your new account</h1>
 
-<form action="login.php?action=register" method="post">
+<form action="" method="post">
 
     <label for="username">Username:<br></label>
     <input type="text" name="username" required><br>

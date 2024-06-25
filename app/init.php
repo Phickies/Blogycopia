@@ -11,7 +11,6 @@ load_env(BASE_DIR . "/../.env");
 // load application files
 load_files([
     "/controllers/controller.php",
-    "/controllers/user.controller.php",
     "/models/database.php",
     "/models/user.model.php",
     "/models/blog.model.php",

@@ -1,12 +1,18 @@
 <?php
 declare(strict_types=1);
 
+require("user.controller.php");
+
 /**
  * Controller for handling logic between databse and user end point
  */
 class Controller {
 
-    public function __construct(){}
+    public $user;
+
+    public function __construct(){
+        $this->user = new UserController();
+    }
     
     /**
      * Render front-end view
