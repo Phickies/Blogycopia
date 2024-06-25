@@ -26,8 +26,6 @@ class Router {
         $method = $this->getMethod();
         $uri = $this->getFilteredUri();
         $query = $this->getFilteredQuery();
-
-        print_r($query);
     
         if (!$this->isMethodValid($method)) {
             $this->handleError(405, "Method not allowed");
@@ -52,7 +50,7 @@ class Router {
         return $this->filter($this->retrivedQuery());
     }
 
-    
+
     private function filter(array $query): ?array {
         foreach ($query as $key => &$value) {
             $value = filter_var($value, FILTER_SANITIZE_SPECIAL_CHARS);
