@@ -18,6 +18,6 @@ class LoginController extends Controller
 
     public function displayPage()
     {
-        parent::render("");
+        $this->render("Login/View/login.php");
     }
 }

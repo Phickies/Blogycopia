@@ -18,6 +18,6 @@ class HomeController extends Controller
 
     public function displayPage()
     {
-        $this->render("Home/View/home.php");
+        $this->render("Home/View/home.php", ["heading" => "Welcome"]);
     }
 }

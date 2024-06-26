@@ -23,13 +23,4 @@ class View
     {
         include_once(BASE_DIR . "/core/templates/footer.php");
     }
-
-
-    public function renderError(int $errorCode)
-    {
-        switch ($errorCode) {
-            case 404:
-                include_once(BASE_DIR . "/core/templates/404.php");
-        }
-    }
 }

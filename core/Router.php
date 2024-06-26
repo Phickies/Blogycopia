@@ -47,6 +47,7 @@ class Router
         $method = $request["method"];
         $uri = $request["uri"];
 
+        // REFACTOR THIS CODE> 
         if (isset($this->routelist[$method][$uri])) {
             $route = $this->routelist[$method][$uri];
             $controllerClass = $route["class"];
@@ -57,17 +58,24 @@ class Router
                 if (method_exists($controller, $function)) {
                     call_user_func_array([$controller, $function], $request["query"]);
                 } else {
-                    echo "Method $function not found in controller $controllerClass";
-                    http_response_code(404);
+                    $this->handleError(404, "Method $function not found in controller $controllerClass");
                 }
             } else {
-                echo "Controller class $controllerClass not found";
-                http_response_code(404);
+                $this->handleError(404, "Controller class $controllerClass not found");
             }
         } else {
-            echo "No route matched for $method $uri";
-            http_response_code(404);
+            $this->handleError(404, "No route matched for $method $uri");
         }
+        // REFACTOR THIS CODE
+    }
+
+
+    public function handleError(int $errorCode, string $description)
+    {
+        http_response_code($errorCode);
+
+        $errorController = new \App\Error\Controllers\ErrorController();
+        $errorController->displayErrorPage($errorCode, $description);
     }
 
 
@@ -144,7 +152,7 @@ class Router
         return $query;
     }
 
-    
+
     /**
      * retrieve queries and convert it to array
      * return null if invalid queries

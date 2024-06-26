@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Core;
 
 use Core\View;
-
+use Exception;
 
 class Controller
 {
@@ -22,32 +22,45 @@ class Controller
 
     /**
      * Render the front-end view page
+     * @param string $filePath Path the view file that you want to render.
+     * @param mixed $data Data file to pass into the page, Example your page need $data["title
+     * "] so you must pass in the ["title" => "something"]
+     * @param bool $isCustomViewFile If you want to render your own designed view file and dont want to include
+     * built-in template view.
      */
-    public function render(string $filePath, bool $isCustomViewFile = false): void
+    public function render(string $filePath, mixed $data = null, bool $isCustomViewFile = false): void
     {
-
         if (!$isCustomViewFile) {
-            $this->addToTemplate($filePath);
+            $this->addToTemplate($filePath, $data);
             return;
         }
-        $this->handleViewFile($filePath);
+        $this->handleViewFile($filePath, $data);
     }
 
 
-    private function addToTemplate(string $filePath): void
+    /**
+     * Add built-in template for the page.
+     */
+    private function addToTemplate(string $filePath, mixed $data): void
     {
         $this->templateView->addHeader();
-        $this->handleViewFile($filePath);
+        $this->handleViewFile($filePath, $data);
         $this->templateView->addFooter();
     }
 
 
-    private function handleViewFile(string $filePath): void
+    // NEED A BETTER WAY TO HANDLE ERROR IN THIS CODE
+    private function handleViewFile(string $filePath, mixed $data): void
     {
-        if (file_exists($filePath)) {
-            require_once $filePath;
+        $path = BASE_DIR . "/modules/" . $filePath;
+
+        if (file_exists($path)) {
+            if ($data !== null) {
+                extract($data);
+            }
+            include_once $path;
         } else {
-            require_once $this->templateView->renderError(404);
+            throw new Exception("The view file path is not corrected or missing", 1);
         }
     }
 }
