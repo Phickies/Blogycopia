@@ -1,0 +1,19 @@
+{
+    "name": "phicks/blogycopia",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "App\\": "modules/",
+            "Core\\": "core/",
+            "Helper\\": "helpers/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Phicks",
+            "email": "mineran2003@gmail.com"
+        }
+    ],
+    "require": {}
+}
