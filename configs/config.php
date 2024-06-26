@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
-require_once BASE_DIR . "/configs/.env";
+use Helpers\Helper;
 
 
+// Load .env file to extract data
+Helper::loadEnv(BASE_DIR . "configs/.env");
+
+
+// Declare config variable
 $config = [
 
     "db" => [

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Home\Controllers;
+namespace App\Login\Controllers;
 
 use Core\Controller;
 
 
-class HomeController extends Controller
+class LoginController extends Controller
 {
 
     public function __construct()
@@ -18,6 +18,6 @@ class HomeController extends Controller
 
     public function displayPage()
     {
-        $this->render("Home/View/home.php");
+        parent::render("");
     }
 }

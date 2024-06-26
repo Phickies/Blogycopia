@@ -6,7 +6,7 @@
         "psr-4": {
             "App\\": "modules/",
             "Core\\": "core/",
-            "Helper\\": "helpers/"
+            "Helpers\\": "helpers/"
         }
     },
     "authors": [
