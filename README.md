@@ -6,4 +6,6 @@ The core is the middle man containing classes of each modules for managing modul
 
 ## TODO
 
-- Find a way to use HomeController to render the view for that particular module. The homeController will create a new method for that and then call the view method from the Core Controller to also add the header and the footer from the Core View class. After that, the whole page is then render.
+Fixing, refactor code base that commented.
+Making the router also inside each module so that it can be plug and play.
+Making the interaction between login, register, and home page together
