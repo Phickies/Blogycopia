@@ -16,12 +16,25 @@ class Router
     }
 
 
+    /**
+     * add router to controller
+     * @param string $method Any valid request method. pass in as a string. For example, "get", "Post", "UPDATE", etc.. However, be consistance
+     * with your naming of the method.
+     * @param string $uri Router index for specify track. For example, "/", "/hello", "/foo/bar", "/foo{}", etc..
+     * @param mixed $controller Controller class of the module you want to route the url to. Must pass in as 
+     * a class Controller NOT INSTANCE. For example HomeController::class, LoginController::class, etc..
+     * @param string $function Name of the function you want to execute upon routing successfully to the controller. For example, after
+     * routing successfully, execute method display from the Controller you pass in before.
+     */
     public function add(string $method, string $uri, $controller, string $function)
     {
-        $this->routelist[$method][$uri] = $function;
+        $this->routelist[$method][$uri] = ["class" => $controller, "function" => $function];
     }
 
 
+    /**
+     * Handle the received request and dispatch it to the desirer controller
+     */
     public function handleRequest()
     {
         $request = $this->getRequest();
@@ -30,12 +43,14 @@ class Router
             echo "Bad request";
             http_response_code(400);
         }
+
+        
     }
 
 
     /**
      * fetch and return the request method from the url.
-     * null if not found or invalid
+     * null if not found or invalid method
      */
     private function getMethod(): ?string
     {
@@ -45,7 +60,7 @@ class Router
 
     /**
      * fetch and return the queries from the url.
-     * null if not found or invalid
+     * null if not found or invalid queries
      */
     private function getQuery(): ?array
     {
@@ -55,7 +70,7 @@ class Router
 
     /**
      * fetch and return the uri from the url.
-     * null if not found or invalid
+     * return null if not found or invalid uri
      */
     private function getUri(): ?string
     {
@@ -65,7 +80,7 @@ class Router
 
     /**
      * fetch and return method, uri and queries as a list from the url
-     * null if invalid request
+     * return null if invalid request
      */
     private function getRequest(): ?array
     {
@@ -85,6 +100,10 @@ class Router
     }
 
 
+    /**
+     * filter queries.
+     * return null if invalid queries
+     */
     private function filterQuery(array $query): ?array
     {
 
@@ -102,7 +121,11 @@ class Router
         return $query;
     }
 
-
+    
+    /**
+     * retrieve queries and convert it to array
+     * return null if invalid queries
+     */
     private function retrivedQuery(): ?array
     {
         $queryString = parse_url($_SERVER["REQUEST_URI"], PHP_URL_QUERY);
