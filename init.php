@@ -9,10 +9,4 @@ require_once BASE_DIR . "/functions.php";
 load_env(BASE_DIR . "/../.env");
 
 // load application files
-load_files([
-    "/controllers/controller.php",
-    "/models/database.php",
-    "/models/user.model.php",
-    "/models/blog.model.php",
-    "/routers/Router.php"
-]);
+load_files([]);
