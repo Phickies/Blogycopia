@@ -33,7 +33,7 @@ class Router
 
 
     /**
-     * Handle the received request and dispatch it to the desirer controller
+     * handle the received request and dispatch it to the desirer controller
      */
     public function handleRequest()
     {
@@ -44,13 +44,36 @@ class Router
             http_response_code(400);
         }
 
-        
+        $method = $request["method"];
+        $uri = $request["uri"];
+
+        if (isset($this->routelist[$method][$uri])) {
+            $route = $this->routelist[$method][$uri];
+            $controllerClass = $route["class"];
+            $function = $route["function"];
+
+            if (class_exists($controllerClass)) {
+                $controller = new $controllerClass();
+                if (method_exists($controller, $function)) {
+                    call_user_func_array([$controller, $function], $request["query"]);
+                } else {
+                    echo "Method $function not found in controller $controllerClass";
+                    http_response_code(404);
+                }
+            } else {
+                echo "Controller class $controllerClass not found";
+                http_response_code(404);
+            }
+        } else {
+            echo "No route matched for $method $uri";
+            http_response_code(404);
+        }
     }
 
 
     /**
      * fetch and return the request method from the url.
-     * null if not found or invalid method
+     * return null if not found or invalid method
      */
     private function getMethod(): ?string
     {
@@ -60,7 +83,7 @@ class Router
 
     /**
      * fetch and return the queries from the url.
-     * null if not found or invalid queries
+     * return null if not found or invalid queries
      */
     private function getQuery(): ?array
     {
