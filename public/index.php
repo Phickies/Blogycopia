@@ -8,15 +8,18 @@ define("BASE_DIR", dirname(__FILE__) . "/../");
 require_once(BASE_DIR . "vendor/autoload.php");
 require_once(BASE_DIR . "configs/config.php");
 
-use App\Home\Controllers\HomeController;
-use App\Login\Controllers\LoginController;
+use App\Home\Router\HomeRouter;
+use App\Login\Router\LoginRouter;
 use Core\Router;
 
 
 $router = new Router();
 
 
-$router->add("GET", "/", HomeController::class, "displayPage");
-$router->add("GET", "/login", LoginController::class, "displayPage");
+$router->add("GET", "/", HomeRouter::class, "dispatch");
+$router->add("GET", "/login", LoginRouter::class, "dispatch");
 
-$router->handleRequest();
+// $router->add(HomeRouter::class, "dispatch");
+// $router->add(LoginRouter::class, "dispatch");
+
+$router->dispatch();

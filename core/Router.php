@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Core;
 
+use Exception;
+use Helpers\Helper;
+
 
 class Router
 {
 
-    private $routelist = [];
+    protected $routelist = [];
 
 
     public function __construct()
@@ -17,65 +20,104 @@ class Router
 
 
     /**
-     * add router to controller
-     * @param string $method Any valid request method. pass in as a string. For example, "get", "Post", "UPDATE", etc.. However, be consistance
+     * add router to controller.
+     * @param string $arequest_method Any valid request method. pass in as a string. For example, "get", "Post", "UPDATE", etc.. However, be consistance
      * with your naming of the method.
      * @param string $uri Router index for specify track. For example, "/", "/hello", "/foo/bar", "/foo{}", etc..
-     * @param mixed $controller Controller class of the module you want to route the url to. Must pass in as 
-     * a class Controller NOT INSTANCE. For example HomeController::class, LoginController::class, etc..
-     * @param string $function Name of the function you want to execute upon routing successfully to the controller. For example, after
+     * @param mixed $object_class Controller class or Router class of the module you want to route the url to. Must pass in as 
+     * a class Controller or Router NOT INSTANCE. For example HomeController::class, LoginController::class, ErrorRouter::class etc..
+     * @param string $method Name of the method you want to execute upon routing successfully to the controller. For example, after
      * routing successfully, execute method display from the Controller you pass in before.
      */
-    public function add(string $method, string $uri, $controller, string $function)
+    public function add(string $request_method, string $uri, $object_class, string $method)
     {
-        $this->routelist[$method][$uri] = ["class" => $controller, "function" => $function];
+        $this->routelist[$request_method][$uri] = ["class" => $object_class, "method" => $method];
     }
 
 
     /**
-     * handle the received request and dispatch it to the desirer controller
+     * dispatch the made request into the desire controllers or modular routers
      */
-    public function handleRequest()
+    public function dispatch()
+    {
+        $route = $this->handleRequest();
+
+        $objectClass = $route["object"]["class"];
+        $method = $route["object"]["method"];
+
+
+        if (!class_exists($objectClass)) {
+            $this->handleError(404, "Both Controller class or Router class $objectClass not found");
+            die();
+        }
+
+        $object = new $objectClass();
+
+        if (!method_exists($object, $method)) {
+            $this->handleError(404, "Method $method of class $objectClass not found");
+            die();
+        }
+
+        call_user_func_array([$object, $method], $route["query"]);
+    }
+
+
+    /**
+     * handle the received request and return the route.
+     * return a route array contain the object/modular that the it route to and the query/parameter for the 
+     * function that will be callback when routing successful.
+     * Example [object, query];
+     */
+    private function handleRequest(): array
     {
         $request = $this->getRequest();
 
         if (!$request) {
-            echo "Bad request";
-            http_response_code(400);
+            $this->handleError(400, "Bad Request");
+            die();
         }
 
         $method = $request["method"];
         $uri = $request["uri"];
 
-        // REFACTOR THIS CODE> 
-        if (isset($this->routelist[$method][$uri])) {
-            $route = $this->routelist[$method][$uri];
-            $controllerClass = $route["class"];
-            $function = $route["function"];
 
-            if (class_exists($controllerClass)) {
-                $controller = new $controllerClass();
-                if (method_exists($controller, $function)) {
-                    call_user_func_array([$controller, $function], $request["query"]);
-                } else {
-                    $this->handleError(404, "Method $function not found in controller $controllerClass");
-                }
-            } else {
-                $this->handleError(404, "Controller class $controllerClass not found");
-            }
-        } else {
+        if ($this->isFoundRoute($method, $uri)) {
             $this->handleError(404, "No route matched for $method $uri");
+            die();
         }
-        // REFACTOR THIS CODE
+
+        return [
+            "object" => $this->routelist[$method][$uri],
+            "query" => [$request["query"]]
+        ];
     }
 
 
-    public function handleError(int $errorCode, string $description)
+    /**
+     * routing to error module Need to be in Error routing.
+     */
+    public function handleError(int $errorCode, string $description): void
     {
         http_response_code($errorCode);
 
-        $errorController = new \App\Error\Controllers\ErrorController();
-        $errorController->displayErrorPage($errorCode, $description);
+        try {
+            $errorController = new \App\Error\Controllers\ErrorController();
+            $errorController->displayErrorPage($errorCode, $description);
+        } catch (Exception $e) {
+            echo "Module for displaying error page has error: <br>";
+            echo $e . "<br>";
+            echo $description;
+        }
+    }
+
+
+    /**
+     * check for valid route to conroller based on method and uri.
+     * return false if not found
+     */
+    private function isFoundRoute($method, $uri): bool
+    {
+        return !isset($this->routelist[$method][$uri]);
     }
 
 
@@ -110,7 +152,7 @@ class Router
 
 
     /**
-     * fetch and return method, uri and queries as a list from the url
+     * fetch and return method, uri and queries as a list from the url.
      * return null if invalid request
      */
     private function getRequest(): ?array
@@ -154,7 +196,7 @@ class Router
 
 
     /**
-     * retrieve queries and convert it to array
+     * retrieve queries and convert it to array.
      * return null if invalid queries
      */
     private function retrivedQuery(): ?array

@@ -23,7 +23,8 @@ class Controller
     /**
      * Render the front-end view page
      * @param string $filePath Path the view file that you want to render.
-     * @param mixed $data Data file to pass into the page, Example your page need $data["title
+     * @param mixed $data Data file to pass into the page so that it 
+     * can show data to the page, Example your page need $data["title
      * "] so you must pass in the ["title" => "something"]
      * @param bool $isCustomViewFile If you want to render your own designed view file and dont want to include
      * built-in template view.

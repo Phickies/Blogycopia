@@ -34,4 +34,9 @@ class Helper
             }
         }
     }
+
+    
+    public static function isClass($object, $class) {
+        return $object instanceof $class;
+    }
 }

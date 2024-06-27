@@ -9,15 +9,17 @@ use Core\Controller;
 
 class HomeController extends Controller
 {
-
     public function __construct()
     {
         parent::__construct();
     }
 
 
-    public function displayPage()
+    public function displayPage($queryParams)
     {
-        $this->render("Home/View/home.php", ["heading" => "Welcome"]);
+        $data = array_merge($queryParams, [
+            "heading" => "Welcome",
+        ]);
+        $this->render("Home/View/home.php", $data);
     }
 }
