@@ -10,10 +10,11 @@ use Core\Router;
 
 class LoginRouter extends Router
 {
+    
     public function __construct()
     {
         parent::__construct();
         
-        $this->add("GET", "/login", LoginController::class, "displayPage");
+        $this->add("GET", "/", LoginController::class, "displayPage");
     }
 }

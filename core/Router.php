@@ -11,7 +11,7 @@ use Helpers\Helper;
 class Router
 {
 
-    protected $routelist = [];
+    protected $routeList = [];
 
 
     public function __construct()
@@ -20,39 +20,75 @@ class Router
 
 
     /**
-     * add router to controller.
-     * @param string $arequest_method Any valid request method. pass in as a string. For example, "get", "Post", "UPDATE", etc.. However, be consistance
-     * with your naming of the method.
-     * @param string $uri Router index for specify track. For example, "/", "/hello", "/foo/bar", "/foo{}", etc..
-     * @param mixed $object_class Controller class or Router class of the module you want to route the url to. Must pass in as 
-     * a class Controller or Router NOT INSTANCE. For example HomeController::class, LoginController::class, ErrorRouter::class etc..
-     * @param string $method Name of the method you want to execute upon routing successfully to the controller. For example, after
-     * routing successfully, execute method display from the Controller you pass in before.
+     * Add a route to the module entry router.
+     * @param string $entryRouterClass Class of the router in the module.
+     * @param string $indexAddress The URI to access the router of that class.
      */
-    public function add(string $request_method, string $uri, $object_class, string $method)
+    public function addModule(string $entryRouterClass, string $indexAddress = "/")
     {
-        $this->routelist[$request_method][$uri] = ["class" => $object_class, "method" => $method];
+        $this->routeList[$indexAddress] = $entryRouterClass;
     }
 
 
     /**
-     * dispatch the made request into the desire controllers or modular routers
+     * Dispatch the request to the assigned module router for further dispatching.
+     * @throws ErrorPage If any routing error occurs.
      */
-    public function dispatch()
+    public function dispatchToModule()
+    {
+        $uri = $this->getUri();
+
+        if (!isset($this->routeList[$uri])) {
+            $this->handleError(404, "Page not found");
+            die();
+        }
+
+        $moduleRouterClass = $this->routeList[$uri];
+        if (!class_exists($moduleRouterClass)) {
+            $this->handleError(404, "Modules of $moduleRouterClass not found");
+            die();
+        }
+
+        $moduleRouter = new $moduleRouterClass();
+        if (!method_exists($moduleRouter, "dispatch")) {
+            $this->handleError(404, "Method 'dispatch' can't be found in class $moduleRouterClass");
+            die();
+        }
+
+        $moduleRouter->dispatch();
+    }
+
+
+    /**
+     * Add route to object controller.
+     * @param string $requestMethod The HTTP method.
+     * @param string $uri Router index for specifying track.
+     * @param string $objectClass Controller class to route the URL to.
+     * @param string $method Method to execute upon successful routing.
+     */
+    protected function add(string $request_method, string $uri, $object_class, string $method)
+    {
+        $this->routeList[$request_method][$uri] = ["class" => $object_class, "method" => $method];
+    }
+
+
+    /**
+     * Handle and dispatch the made request to the desired controllers.
+     * @throws ErrorPage If dispatching fails.
+     */
+    protected function dispatch()
     {
         $route = $this->handleRequest();
-
         $objectClass = $route["object"]["class"];
         $method = $route["object"]["method"];
 
 
         if (!class_exists($objectClass)) {
-            $this->handleError(404, "Both Controller class or Router class $objectClass not found");
+            $this->handleError(404, "Controller class $objectClass not found");
             die();
         }
 
         $object = new $objectClass();
-
         if (!method_exists($object, $method)) {
             $this->handleError(404, "Method $method of class $objectClass not found");
             die();
@@ -63,10 +99,27 @@ class Router
 
 
     /**
-     * handle the received request and return the route.
-     * return a route array contain the object/modular that the it route to and the query/parameter for the 
-     * function that will be callback when routing successful.
-     * Example [object, query];
+     * routing to error module Need to be in Error routing.
+     */
+    protected function handleError(int $errorCode, string $description)
+    {
+        http_response_code($errorCode);
+
+        try {
+            $errorController = new \App\Error\Controllers\ErrorController();
+            $errorController->displayErrorPage($errorCode, $description);
+        } catch (Exception $e) {
+            echo "Module for displaying error page has error or missing: <br>";
+            echo $e . "<br>";
+            echo $description;
+        }
+    }
+
+
+    /**
+     * Handle received request and return the route.
+     * @return array Contains the object/module and the query/parameter for the callback.
+     * @throws ErrorPage If the request is bad or the route is not found.
      */
     private function handleRequest(): array
     {
@@ -77,136 +130,87 @@ class Router
             die();
         }
 
-        $method = $request["method"];
-        $uri = $request["uri"];
-
-
-        if ($this->isFoundRoute($method, $uri)) {
-            $this->handleError(404, "No route matched for $method $uri");
-            die();
-        }
-
         return [
-            "object" => $this->routelist[$method][$uri],
+            "object" => $this->routeList[$request["method"]][$request["uri"]],
             "query" => [$request["query"]]
         ];
     }
 
 
     /**
-     * routing to error module Need to be in Error routing.
-     */
-    public function handleError(int $errorCode, string $description): void
-    {
-        http_response_code($errorCode);
-
-        try {
-            $errorController = new \App\Error\Controllers\ErrorController();
-            $errorController->displayErrorPage($errorCode, $description);
-        } catch (Exception $e) {
-            echo "Module for displaying error page has error: <br>";
-            echo $e . "<br>";
-            echo $description;
-        }
-    }
-
-
-    /**
-     * check for valid route to conroller based on method and uri.
-     * return false if not found
-     */
-    private function isFoundRoute($method, $uri): bool
-    {
-        return !isset($this->routelist[$method][$uri]);
-    }
-
-
-    /**
-     * fetch and return the request method from the url.
-     * return null if not found or invalid method
-     */
-    private function getMethod(): ?string
-    {
-        return $_SERVER["REQUEST_METHOD"];
-    }
-
-
-    /**
      * fetch and return the queries from the url.
-     * return null if not found or invalid queries
+     * @return array|null Consist of key query and its values. Returns null if invalid.
      */
     private function getQuery(): ?array
     {
-        return $this->filterQuery($this->retrivedQuery());
+        return $this->filterQuery($this->retrieveQuery());
     }
 
 
     /**
-     * fetch and return the uri from the url.
-     * return null if not found or invalid uri
+     * Fetch and return the URI from the URL.
+     * @return string Processed URI.
      */
-    private function getUri(): ?string
+    private function getUri(): string
     {
-        return parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+        $uri = trim($_SERVER['REQUEST_URI'], '/');
+        return empty($uri) ? '/' : '/' . parse_url($uri, PHP_URL_PATH);
     }
 
 
     /**
-     * fetch and return method, uri and queries as a list from the url.
-     * return null if invalid request
+     * Fetch and return request from global variable.
+     * @return array|null Consists of method, uri, and query. Returns null if invalid.
      */
     private function getRequest(): ?array
     {
-        $method = $this->getMethod();
-        $uri = $this->getUri();
-        $params = $this->getQuery();
+        $method = $_SERVER["REQUEST_METHOD"] ?? null;
+        $uri = Helper::removeFirstSegment($this->getUri());
+        $query = $this->getQuery();
 
-        if (!$method || !$uri || $params === null) {
+        if (!$method || !$uri || $query === null) {
             return null;
         }
 
-        return [
-            "method" => $method,
-            "uri" => $uri,
-            "query" => $params
-        ];
+        return ["method" => $method, "uri" => $uri, "query" => $query];
     }
 
 
     /**
-     * filter queries.
-     * return null if invalid queries
+     * Filter queries.
+     * @param array $query Array of query strings.
+     * @return array|null Filtered query or null if invalid.
      */
-    private function filterQuery(array $query): ?array
+    private function filterQuery(?array $query): ?array
     {
-
         if ($query === null) {
             return null;
         }
-
-        foreach ($query as $key => &$value) {
+        
+        foreach ($query as $key => $value) {
             $value = filter_var($value, FILTER_SANITIZE_SPECIAL_CHARS);
-            if ($value == null) {
+            if (!$value) {
                 return null;
             }
         }
-
         return $query;
     }
 
 
     /**
-     * retrieve queries and convert it to array.
-     * return null if invalid queries
+     * Retrieve and convert query strings to an array.
+     * @return array|null Parsed query parameters or null if invalid.
      */
-    private function retrivedQuery(): ?array
+    private function retrieveQuery(): ?array
     {
         $queryString = parse_url($_SERVER["REQUEST_URI"], PHP_URL_QUERY);
         $queryParams = [];
+
         // Parse the query from string to list
         if ($queryString) {
             parse_str($queryString, $queryParams);
         }
+
         return $queryParams;
     }
 }

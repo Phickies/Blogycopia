@@ -10,10 +10,12 @@ use Core\Router;
 
 class HomeRouter extends Router
 {
+    
     public function __construct()
     {
         parent::__construct();
         
         $this->add("GET", "/", HomeController::class, "displayPage");
+
     }
 }
