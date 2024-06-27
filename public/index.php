@@ -10,16 +10,14 @@ require_once(BASE_DIR . "configs/config.php");
 
 use App\Home\Router\HomeRouter;
 use App\Login\Router\LoginRouter;
+use App\Register\Router\RegisterRouter;
 use Core\Router;
 
 
 $router = new Router();
 
+$router->addModule(HomeRouter::class);
+$router->addModule(LoginRouter::class, "/login");
+$router->addModule(RegisterRouter::class, "/register");
 
-$router->add("GET", "/", HomeRouter::class, "dispatch");
-$router->add("GET", "/login", LoginRouter::class, "dispatch");
-
-// $router->add(HomeRouter::class, "dispatch");
-// $router->add(LoginRouter::class, "dispatch");
-
-$router->dispatch();
+$router->dispatchToModule();

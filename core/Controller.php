@@ -9,8 +9,7 @@ use Exception;
 
 class Controller
 {
-
-
+    
     protected $templateView;
 
 
@@ -22,27 +21,20 @@ class Controller
 
     /**
      * Render the front-end view page
-     * @param string $filePath Path the view file that you want to render.
-     * @param mixed $data Data file to pass into the page so that it 
-     * can show data to the page, Example your page need $data["title
-     * "] so you must pass in the ["title" => "something"]
-     * @param bool $isCustomViewFile If you want to render your own designed view file and dont want to include
-     * built-in template view.
+     * @param string $filePath Path to the view file that you want to render.
+     * @param array|null $data Data to pass into the page, e.g., ['title' => 'My Page']
+     * @param bool $isCustomViewFile Flag to use custom view file without built-in template.
      */
-    public function render(string $filePath, mixed $data = null, bool $isCustomViewFile = false): void
+    public function render(string $filePath, mixed $data = null, bool $isCustomViewFile = false)
     {
-        if (!$isCustomViewFile) {
-            $this->addToTemplate($filePath, $data);
-            return;
-        }
-        $this->handleViewFile($filePath, $data);
+        $isCustomViewFile ? $this->handleViewFile($filePath, $data) : $this->addToTemplate($filePath, $data);
     }
 
 
     /**
      * Add built-in template for the page.
      */
-    private function addToTemplate(string $filePath, mixed $data): void
+    private function addToTemplate(string $filePath, mixed $data)
     {
         $this->templateView->addHeader();
         $this->handleViewFile($filePath, $data);
@@ -50,18 +42,20 @@ class Controller
     }
 
 
-    // NEED A BETTER WAY TO HANDLE ERROR IN THIS CODE
-    private function handleViewFile(string $filePath, mixed $data): void
+    /**
+     * Load and render a view file with optional data. 
+     * @throws Exception if the file is missing.
+     */
+    private function handleViewFile(string $filePath, array $data = null)
     {
         $path = BASE_DIR . "/modules/" . $filePath;
-
-        if (file_exists($path)) {
-            if ($data !== null) {
-                extract($data);
-            }
-            include_once $path;
-        } else {
-            throw new Exception("The view file path is not corrected or missing", 1);
+        if (!file_exists($path)) {
+            throw new Exception("View file '{$filePath}' not found.");
         }
+
+        if (is_array($data)) {
+            extract($data);
+        }
+        include $path;
     }
 }

@@ -39,4 +39,23 @@ class Helper
     public static function isClass($object, $class) {
         return $object instanceof $class;
     }
+
+
+    public static function removeFirstSegment($path) {
+        // Split the path into segments
+        $segments = explode('/', $path);
+    
+        // Remove the empty element at the beginning if the path started with a slash
+        if ($segments[0] === '') {
+            array_shift($segments); // Remove the leading empty segment
+        }
+    
+        // Remove the first real segment
+        array_shift($segments);
+    
+        $newPath = '/' . join('/', $segments);
+    
+        // Trim a trailing slash if the new path isn't just '/'
+        return $newPath === '/' ? $newPath : rtrim($newPath, '/');
+    }
 }
