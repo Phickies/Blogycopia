@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Register\Router;
+namespace App\Authentication\Routers;
 
-use App\Register\Controllers\RegisterController;
+use App\Authentication\Controllers\RegisterController;
 use Core\Router;
 
 
@@ -15,6 +15,6 @@ class RegisterRouter extends Router
     {
         parent::__construct();
         
-        $this->add("GET", "/", RegisterController::class, "displayPage");
+        $this->add("GET", "/", RegisterController::class, "renderRegisterPage");
     }
 }

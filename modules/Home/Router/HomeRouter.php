@@ -15,7 +15,7 @@ class HomeRouter extends Router
     {
         parent::__construct();
         
-        $this->add("GET", "/", HomeController::class, "displayPage");
+        $this->add("GET", "/", HomeController::class, "renderHomePage");
 
     }
 }

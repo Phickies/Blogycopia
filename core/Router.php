@@ -6,12 +6,18 @@ namespace Core;
 
 use Exception;
 use Helpers\Helper;
+use Core\SessionHandler;
+use Helpers\DependencyInjector;
 
 
 class Router
 {
 
     protected $routeList = [];
+    protected ?SessionHandler $session = null;
+
+    private $uri = null;
+    private $trimmedUri = null;
 
 
     public function __construct()
@@ -30,32 +36,64 @@ class Router
     }
 
 
+    public function addSession(SessionHandler $session)
+    {
+        $this->session = $session;
+    }
+
+
     /**
      * Dispatch the request to the assigned module router for further dispatching.
      * @throws ErrorPage If any routing error occurs.
      */
-    public function dispatchToModule()
+    public function dispatchToModule($uri = null)
     {
-        $uri = $this->getUri();
+        $this->setUri($uri);
 
-        if (!isset($this->routeList[$uri])) {
+        if (!isset($this->routeList[$this->trimmedUri])) {
             $this->handleError(404, "Page not found");
             die();
         }
 
-        $moduleRouterClass = $this->routeList[$uri];
+        $this->accessToModuleRouter($this->routeList[$this->trimmedUri]);
+    }
+
+
+    /**
+     * Try to access to that module router
+     * @throws ErrorPage If any routing error occurs.
+     */
+    public function accessToModuleRouter(mixed $moduleRouterClass)
+    {
+
         if (!class_exists($moduleRouterClass)) {
-            $this->handleError(404, "Modules of $moduleRouterClass not found");
+            $this->handleError(500, "Modules of $moduleRouterClass not found");
             die();
         }
 
         $moduleRouter = new $moduleRouterClass();
-        if (!method_exists($moduleRouter, "dispatch")) {
-            $this->handleError(404, "Method 'dispatch' can't be found in class $moduleRouterClass");
+        if (!method_exists($moduleRouter, "dispatchToController")) {
+            $this->handleError(500, "Method 'dispatchToController' can't be found in class $moduleRouterClass");
             die();
         }
 
-        $moduleRouter->dispatch();
+        // Check the routerList, 
+        // If found key that start with "/" -> dispatchToModule() else dispatch()
+        // this means that we detect if the router has another sub router routing into that or not.
+        // remove the first segment of the uri means we move on to the next segment of the URL
+
+        // NEED TO ADD A FUNCTION TO CONTROLL WHAT IF THE USER ONLY ACCESS /authentication NOT 
+        // /authentication/login. ???? WE NEED TO CHECK THE $this->uri to see if they are have more slac or not
+
+        Helper::containsSlashKey($moduleRouter->getRouteList()) ?
+            $moduleRouter->dispatchToModule(Helper::removeFirstSegment($this->uri)) :
+            $moduleRouter->dispatchToController(Helper::removeFirstSegment($this->uri));
+    }
+
+
+    protected function getRouteList(): array
+    {
+        return $this->routeList;
     }
 
 
@@ -74,34 +112,41 @@ class Router
 
     /**
      * Handle and dispatch the made request to the desired controllers.
+     * @param string $uri The string of segments to process.
      * @throws ErrorPage If dispatching fails.
      */
-    protected function dispatch()
+    protected function dispatchToController(string $uri)
     {
+
+        // Find another way to re organised this code.
+        $this->setUri($uri);
+
         $route = $this->handleRequest();
-        $objectClass = $route["object"]["class"];
-        $method = $route["object"]["method"];
+        $controllerClass = $route["controller"]["class"];
+        $method = $route["controller"]["method"];
 
 
-        if (!class_exists($objectClass)) {
-            $this->handleError(404, "Controller class $objectClass not found");
+        if (!class_exists($controllerClass)) {
+            $this->handleError(404, "Controller class $controllerClass not found");
             die();
         }
 
-        $object = new $objectClass();
-        if (!method_exists($object, $method)) {
-            $this->handleError(404, "Method $method of class $objectClass not found");
+        $controller = $this->getControllerObject($controllerClass);
+ 
+
+        if (!method_exists($controller, $method)) {
+            $this->handleError(404, "Method $method of class $controllerClass not found");
             die();
         }
 
-        call_user_func_array([$object, $method], $route["query"]);
+        call_user_func_array([$controller, $method], $route["query"]);
     }
 
 
     /**
      * routing to error module Need to be in Error routing.
      */
-    protected function handleError(int $errorCode, string $description)
+    public function handleError(int $errorCode, string $description)
     {
         http_response_code($errorCode);
 
@@ -131,9 +176,23 @@ class Router
         }
 
         return [
-            "object" => $this->routeList[$request["method"]][$request["uri"]],
+            "controller" => $this->routeList[$request["method"]][$request["uri"]],
             "query" => [$request["query"]]
         ];
+    }
+
+
+    /**
+     * Get the controller for that specific type of class.
+     * Assigned Session dependency if need
+     */
+    private function getControllerObject($controllerClass): mixed {
+        if ($this->session) {
+            $injector = new DependencyInjector($this->session);
+            return $injector->createController($controllerClass);
+        } else {
+            return new $controllerClass();
+        }
     }
 
 
@@ -144,6 +203,26 @@ class Router
     private function getQuery(): ?array
     {
         return $this->filterQuery($this->retrieveQuery());
+    }
+
+
+    /** REFACTOR THIS CODE */
+    private function setUri($uri)
+    {
+        // Assign the URI
+        if (!$uri) {
+            $this->uri = $this->getUri();
+        } else {
+            $this->uri = $uri;
+        }
+
+        // Process the first URL segment and pass it along to dispatch
+        $a = Helper::getFirstSegment($this->uri);
+        if (!$a) {
+            $this->trimmedUri = $this->uri;
+        } else {
+            $this->trimmedUri = $a;
+        }
     }
 
 
@@ -165,14 +244,13 @@ class Router
     private function getRequest(): ?array
     {
         $method = $_SERVER["REQUEST_METHOD"] ?? null;
-        $uri = Helper::removeFirstSegment($this->getUri());
         $query = $this->getQuery();
 
-        if (!$method || !$uri || $query === null) {
+        if (!$method || !$this->trimmedUri || $query === null) {
             return null;
         }
 
-        return ["method" => $method, "uri" => $uri, "query" => $query];
+        return ["method" => $method, "uri" => $this->trimmedUri, "query" => $query];
     }
 
 
@@ -186,7 +264,7 @@ class Router
         if ($query === null) {
             return null;
         }
-        
+
         foreach ($query as $key => $value) {
             $value = filter_var($value, FILTER_SANITIZE_SPECIAL_CHARS);
             if (!$value) {

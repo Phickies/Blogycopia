@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Core;
 
-use Core\View;
 use Exception;
+use Core\View;
+
 
 class Controller
 {
-    
+
     protected $templateView;
 
 
     public function __construct()
     {
-        $this->templateView = new View();
     }
 
 
@@ -31,14 +31,33 @@ class Controller
     }
 
 
+    protected function isAuthenticatedUser()
+    {
+        // Router might cause this problems
+        return $_SESSION["username"] == "Alan";
+    }
+
+
+    /**
+     * Redirect to other module via calling that module router
+     * @param string $uri Set the raw uri.
+     */
+    protected function redirect(string $uri)
+    {
+        header("Location: $uri");
+        die();
+    }
+
+
     /**
      * Add built-in template for the page.
      */
     private function addToTemplate(string $filePath, mixed $data)
     {
-        $this->templateView->addHeader();
+        $templateView = new View();
+        $templateView->addHeader();
         $this->handleViewFile($filePath, $data);
-        $this->templateView->addFooter();
+        $templateView->addFooter();
     }
 
 
