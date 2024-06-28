@@ -14,14 +14,17 @@ class Router
 {
 
     protected $routeList = [];
-    protected ?SessionHandler $session = null;
+    protected SessionHandler $session;
 
     private $uri = null;
     private $trimmedUri = null;
 
 
-    public function __construct()
+    // Somehow make the router independence from the SessionHandler and make the sessionHandler act
+    // as an injection dependency.
+    public function __construct(SessionHandler $session = new SessionHandler())
     {
+        $this->session = $session;
     }
 
 
@@ -33,12 +36,6 @@ class Router
     public function addModule(string $entryRouterClass, string $indexAddress = "/")
     {
         $this->routeList[$indexAddress] = $entryRouterClass;
-    }
-
-
-    public function addSession(SessionHandler $session)
-    {
-        $this->session = $session;
     }
 
 
@@ -71,7 +68,9 @@ class Router
             die();
         }
 
-        $moduleRouter = new $moduleRouterClass();
+        // Add reference of session to the each other router
+        $moduleRouter = new $moduleRouterClass($this->session);
+
         if (!method_exists($moduleRouter, "dispatchToController")) {
             $this->handleError(500, "Method 'dispatchToController' can't be found in class $moduleRouterClass");
             die();

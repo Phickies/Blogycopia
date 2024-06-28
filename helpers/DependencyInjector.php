@@ -26,7 +26,7 @@ class DependencyInjector
 
                 foreach ($params as $param) {
                     // Check if the parameter type is 'SessionHandler'
-                    if ($param->hasType() && $param->getType()->getName() === 'App\Session\SessionHandler') {
+                    if ($param->hasType() && $param->getType()->getName() === 'Core\SessionHandler') {
                         $initParams[$param->getName()] = $this->session;
                     } else {
                         // Assume the default value or null if no default is available
@@ -39,6 +39,7 @@ class DependencyInjector
 
             // No constructor or no parameters
             return new $controllerClass;
+
         } catch (ReflectionException $e) {
             // Handle the error appropriately
             echo "Error: " . $e->getMessage();

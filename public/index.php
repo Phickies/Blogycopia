@@ -14,10 +14,7 @@ use App\Authentication\Routers\AuthenticationRouter;
 use Core\Router;
 use Core\SessionHandler;
 
-$router = new Router();
-$session = new SessionHandler();
-
-$router->addSession($session);
+$router = new Router(new SessionHandler());
 
 $router->addModule(HomeRouter::class);
 $router->addModule(AuthenticationRouter::class, "/authentication");
