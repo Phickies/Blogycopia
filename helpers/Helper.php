@@ -10,7 +10,7 @@ use Exception;
 class Helper
 {
 
-    public static function loadEnv(string $filePath): void
+    public static function loadEnv(string $filePath)
     {
         if (!file_exists($filePath)) {
             throw new Exception("The .env file does not exist.");
@@ -35,27 +35,63 @@ class Helper
         }
     }
 
-    
-    public static function isClass($object, $class) {
-        return $object instanceof $class;
-    }
 
-
-    public static function removeFirstSegment($path) {
+    public static function removeFirstSegment($path): string
+    {
         // Split the path into segments
         $segments = explode('/', $path);
-    
+
         // Remove the empty element at the beginning if the path started with a slash
         if ($segments[0] === '') {
             array_shift($segments); // Remove the leading empty segment
         }
-    
+
         // Remove the first real segment
         array_shift($segments);
-    
+
         $newPath = '/' . join('/', $segments);
-    
+
         // Trim a trailing slash if the new path isn't just '/'
         return $newPath === '/' ? $newPath : rtrim($newPath, '/');
+    }
+
+
+    /**
+     * Extracts the first segment from a path-like string.
+     * 
+     * @param string $path The path string from which to extract the first segment.
+     * @return string The first segment of the path. Returns false if no valid segment is found.
+     */
+    public static function getFirstSegment(string $path): string|bool
+    {
+        // Trim the leading and trailing slashes to avoid empty segments
+        $trimmedPath = trim($path, '/');
+
+        // Split the string by slashes
+        $segments = explode('/', $trimmedPath);
+
+        if (!$segments[0]) {
+            return false;
+        }
+
+        // Return the first segment or an empty string if no segments are available
+        return "/" . $segments[0];
+    }
+
+
+    /**
+     * Checks if any key in the given associative array starts with a forward slash "/".
+     *
+     * @param array $array The associative array to check.
+     * @return bool True if at least one key starts with "/", otherwise false.
+     */
+    public static function containsROUTERKey(array $array): bool
+    {
+        foreach (array_keys($array) as $key) {
+            if (strpos($key, 'ROUTER') === 0) {  // Check if the key starts with "/"
+                return true;
+            }
+        }
+        return false;
     }
 }
