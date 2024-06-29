@@ -14,7 +14,12 @@ class LogoutRouter extends Router
     public function __construct()
     {
         parent::__construct();
-        
-        $this->add("POST", "/", LogoutController::class, "logout");
+
+        $this->addLink();
+    }
+
+
+    private function addLink() {
+        $this->linkController(LogoutController::class, "/", "GET", "logout");
     }
 }

@@ -138,8 +138,7 @@
             <img src="/assets/img/favicon_io/favicon-32x32.png" alt="Logo" width="30" height="30">
             Blogycopia
         </h1>
-
-        // Make it as a post to logout.
+        
         <nav>
             <a href="/authentication/logout">Logout</a>
         </nav>

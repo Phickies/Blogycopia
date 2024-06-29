@@ -9,18 +9,27 @@ use App\Authentication\Routers\LoginRouter;
 use App\Authentication\Routers\RegisterRouter;
 use App\Authentication\Routers\LogoutRouter;
 
+use App\Authentication\Controllers\AuthenController;
+
 
 class AuthenticationRouter extends Router
 {
-    
+
     public function __construct()
     {
         parent::__construct();
-        
-        $this->addModule(LoginRouter::class, "/login");
-        $this->addModule(RegisterRouter::class, "/register");
-        $this->addModule(LogoutRouter::class, "/logout");
 
-        $this->add("GET", "/", AuthenticationRouter::class, "dispatchToModule");
+        $this->addLink();
+    }
+
+
+    private function addLink()
+    {
+        $this->linkController(AuthenController::class, "/", "GET", "redirectToLoginPage");
+        $this->linkController(AuthenController::class, "/hello", "GET", "redirectToLoginPage");
+        
+        $this->linkRouter(LoginRouter::class, "/login");
+        $this->linkRouter(RegisterRouter::class, "/register");
+        $this->linkRouter(LogoutRouter::class, "/logout");
     }
 }

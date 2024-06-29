@@ -28,6 +28,7 @@ class HomeController extends Controller
         }
 
         $data = array_merge($queryParams, [
+            
             "heading" => "Welcome",
             "username" => $_SESSION["username"],
         ]);

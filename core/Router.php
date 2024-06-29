@@ -10,14 +10,23 @@ use Core\SessionHandler;
 use Helpers\DependencyInjector;
 
 
-class Router
+// Interface just for re-organise the class method. Delete after finish
+interface RouterInterface {
+    public function dispatchToController(?string $uri = null);
+    public function dispatchToModule(?string $uri = null);
+    public function linkController(string $controllerClass, string $uri, string $requestMethod, string $method);
+    public function linkRouter(string $entryRouterClass, string $uri = "/");
+}
+
+
+class Router implements RouterInterface
 {
 
-    protected $routeList = [];
+    protected array $routeList = [];
     protected SessionHandler $session;
 
-    private $uri = null;
-    private $trimmedUri = null;
+    private ?string $uri = null;
+    private ?string $trimmedUri = null;
 
 
     // Somehow make the router independence from the SessionHandler and make the sessionHandler act
@@ -29,13 +38,26 @@ class Router
 
 
     /**
-     * Add a route to the module entry router.
+     * Link route to other module entry router.
      * @param string $entryRouterClass Class of the router in the module.
-     * @param string $indexAddress The URI to access the router of that class.
+     * @param string $uri Router index to access the router of that class.
      */
-    public function addModule(string $entryRouterClass, string $indexAddress = "/")
+    public function linkRouter(string $entryRouterClass, string $uri = "/")
     {
-        $this->routeList[$indexAddress] = $entryRouterClass;
+        $this->routeList["ROUTER"][$uri] = $entryRouterClass;
+    }
+
+
+    /**
+     * Link route to object controller.
+     * @param string $controllerClass Controller class to route the URL to.
+     * @param string $uri Router index for specifying track.
+     * @param string $requestMethod The HTTP method.
+     * @param string $method Method of that class to execute upon successful routing.
+     */
+    public function linkController(string $controllerClass, string $uri, string $requestMethod, string $method)
+    {
+        $this->routeList[$requestMethod][$uri] = ["class" => $controllerClass, "method" => $method];
     }
 
 
@@ -43,16 +65,15 @@ class Router
      * Dispatch the request to the assigned module router for further dispatching.
      * @throws ErrorPage If any routing error occurs.
      */
-    public function dispatchToModule($uri = null)
+    public function dispatchToModule(?string $uri = null)
     {
         $this->setUri($uri);
 
-        if (!isset($this->routeList[$this->trimmedUri])) {
-            $this->handleError(404, "Page not found");
-            die();
+        if (!isset($this->routeList["ROUTER"][$this->trimmedUri])) {
+            $this->handleError(404, "URI not found");
         }
 
-        $this->accessToModuleRouter($this->routeList[$this->trimmedUri]);
+        $this->accessToModuleRouter($this->routeList["ROUTER"][$this->trimmedUri]);
     }
 
 
@@ -60,33 +81,46 @@ class Router
      * Try to access to that module router
      * @throws ErrorPage If any routing error occurs.
      */
-    public function accessToModuleRouter(mixed $moduleRouterClass)
+    private function accessToModuleRouter(mixed $moduleRouterClass)
     {
 
         if (!class_exists($moduleRouterClass)) {
-            $this->handleError(500, "Modules of $moduleRouterClass not found");
-            die();
+            $this->handleError(404, "Modules of $moduleRouterClass not found");
         }
 
-        // Add reference of session to the each other router
+        // Instantiate the module router with the session dependency.
         $moduleRouter = new $moduleRouterClass($this->session);
 
-        if (!method_exists($moduleRouter, "dispatchToController")) {
-            $this->handleError(500, "Method 'dispatchToController' can't be found in class $moduleRouterClass");
-            die();
+        $moduleRouterList = $moduleRouter->getRouteList(); // Get list[first_key] [second_key]
+
+        $nextSegmentURL = Helper::removeFirstSegment($this->uri);
+
+        /***
+         * REFACTOR THE CODE
+         * - Make the routerList an Object that has
+         *      + containRouterKey()
+         *      + hasFoundKey(method, uri)
+         * 
+         * - Optimising the dispatchToController. Right now they check the request method TWICE, here and inside the getRequest METHOD.
+         * - Make that so that the use can both use the dispatchToController standalone and also can put that code here.
+         * - Make the router search faster.
+         */
+        if (!Helper::containsROUTERKey($moduleRouterList)) {
+            $moduleRouter->dispatchToController($nextSegmentURL);
+        } else {
+            if ($this->hasMatchKey($moduleRouterList, $nextSegmentURL)) {
+                $moduleRouter->dispatchToController($nextSegmentURL);
+            } else {
+                $moduleRouter->dispatchToModule($nextSegmentURL);
+            }
         }
+    }
 
-        // Check the routerList, 
-        // If found key that start with "/" -> dispatchToModule() else dispatch()
-        // this means that we detect if the router has another sub router routing into that or not.
-        // remove the first segment of the uri means we move on to the next segment of the URL
 
-        // NEED TO ADD A FUNCTION TO CONTROLL WHAT IF THE USER ONLY ACCESS /authentication NOT 
-        // /authentication/login. ???? WE NEED TO CHECK THE $this->uri to see if they are have more slac or not
-
-        Helper::containsSlashKey($moduleRouter->getRouteList()) ?
-            $moduleRouter->dispatchToModule(Helper::removeFirstSegment($this->uri)) :
-            $moduleRouter->dispatchToController(Helper::removeFirstSegment($this->uri));
+    private function hasMatchKey($routeList, $uriSegment)
+    {
+        $currentRequestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        return isset($routeList[$currentRequestMethod]) && array_key_exists($uriSegment, $routeList[$currentRequestMethod]);
     }
 
 
@@ -97,24 +131,19 @@ class Router
 
 
     /**
-     * Add route to object controller.
-     * @param string $requestMethod The HTTP method.
-     * @param string $uri Router index for specifying track.
-     * @param string $objectClass Controller class to route the URL to.
-     * @param string $method Method to execute upon successful routing.
+     * Dispatches the incoming request to the appropriate controller based on the URI.
+     *
+     * This method sets the URI for routing, either from the provided argument or by defaulting 
+     * to the current request URI (whats the user type in). It then retrieves the routing information 
+     * using `handleRequest`. If a valid route is found, it instantiates the designated controller and calls the specified 
+     * method. Errors are handled if either the controller class or method does not exist.
+     *
+     * @param string|null $uri Optional. The specific segment of the router index to process. If not provided, 
+     *                          the URI is determined based on the current request. Examples include "/string" 
+     *                          or "/hello/world".
+     * @throws ErrorPage If the controller class or method is not found, or if other routing errors occur.
      */
-    protected function add(string $request_method, string $uri, $object_class, string $method)
-    {
-        $this->routeList[$request_method][$uri] = ["class" => $object_class, "method" => $method];
-    }
-
-
-    /**
-     * Handle and dispatch the made request to the desired controllers.
-     * @param string $uri The string of segments to process.
-     * @throws ErrorPage If dispatching fails.
-     */
-    protected function dispatchToController(string $uri)
+    public function dispatchToController(?string $uri = null)
     {
 
         // Find another way to re organised this code.
@@ -127,15 +156,13 @@ class Router
 
         if (!class_exists($controllerClass)) {
             $this->handleError(404, "Controller class $controllerClass not found");
-            die();
         }
 
         $controller = $this->getControllerObject($controllerClass);
- 
+
 
         if (!method_exists($controller, $method)) {
             $this->handleError(404, "Method $method of class $controllerClass not found");
-            die();
         }
 
         call_user_func_array([$controller, $method], $route["query"]);
@@ -145,7 +172,7 @@ class Router
     /**
      * routing to error module Need to be in Error routing.
      */
-    public function handleError(int $errorCode, string $description)
+    protected function handleError(int $errorCode, string $description)
     {
         http_response_code($errorCode);
 
@@ -157,6 +184,7 @@ class Router
             echo $e . "<br>";
             echo $description;
         }
+        die();
     }
 
 
@@ -171,7 +199,6 @@ class Router
 
         if (!$request) {
             $this->handleError(400, "Bad Request");
-            die();
         }
 
         return [
@@ -185,7 +212,8 @@ class Router
      * Get the controller for that specific type of class.
      * Assigned Session dependency if need
      */
-    private function getControllerObject($controllerClass): mixed {
+    private function getControllerObject($controllerClass): mixed
+    {
         if ($this->session) {
             $injector = new DependencyInjector($this->session);
             return $injector->createController($controllerClass);
@@ -204,24 +232,21 @@ class Router
         return $this->filterQuery($this->retrieveQuery());
     }
 
-
-    /** REFACTOR THIS CODE */
-    private function setUri($uri)
+    /**
+     * Sets the full URI and its first segment to class properties.
+     *
+     * This method assigns the provided URI or, if not provided, retrieves the current request URI. 
+     * It then determines the first segment of this URI using a helper function. If no segments are 
+     * identified (i.e., the URI does not contain any slashes), it falls back to using the full URI 
+     * as the trimmed URI. This method is used to initialize and prepare URI data for routing decisions.
+     *
+     * @param string|null $uri Optional. The URI to be set. If not provided, the URI is obtained 
+     *                          from the current request.
+     */
+    private function setUri(string|null $uri)
     {
-        // Assign the URI
-        if (!$uri) {
-            $this->uri = $this->getUri();
-        } else {
-            $this->uri = $uri;
-        }
-
-        // Process the first URL segment and pass it along to dispatch
-        $a = Helper::getFirstSegment($this->uri);
-        if (!$a) {
-            $this->trimmedUri = $this->uri;
-        } else {
-            $this->trimmedUri = $a;
-        }
+        $this->uri = $uri ?: $this->getUri();
+        $this->trimmedUri = Helper::getFirstSegment($this->uri) ?: $this->uri;
     }
 
 

@@ -85,10 +85,10 @@ class Helper
      * @param array $array The associative array to check.
      * @return bool True if at least one key starts with "/", otherwise false.
      */
-    public static function containsSlashKey(array $array): bool
+    public static function containsROUTERKey(array $array): bool
     {
         foreach (array_keys($array) as $key) {
-            if (strpos($key, '/') === 0) {  // Check if the key starts with "/"
+            if (strpos($key, 'ROUTER') === 0) {  // Check if the key starts with "/"
                 return true;
             }
         }

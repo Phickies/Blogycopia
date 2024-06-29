@@ -14,8 +14,13 @@ class LoginRouter extends Router
     public function __construct()
     {
         parent::__construct();
-        
-        $this->add("GET", "/", LoginController::class, "renderLoginPage");
-        $this->add("POST", "/", LoginController::class, "authenticateUser");
+
+        $this->addLink();
+    }
+
+
+    private function addLink() {
+        $this->linkController(LoginController::class, "/", "GET", "renderLoginPage");
+        $this->linkController(LoginController::class, "/", "POST", "authenticateUser");
     }
 }

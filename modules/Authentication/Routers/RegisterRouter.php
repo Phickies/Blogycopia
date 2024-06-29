@@ -15,6 +15,11 @@ class RegisterRouter extends Router
     {
         parent::__construct();
         
-        $this->add("GET", "/", RegisterController::class, "renderRegisterPage");
+        $this->addLink();
+    }
+
+    
+    private function addLink() {
+        $this->linkController(RegisterController::class, "/", "GET", "renderRegisterPage");
     }
 }

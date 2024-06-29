@@ -6,4 +6,6 @@ The core is the middle man containing classes of each modules for managing modul
 
 ## TODO
 
-Making the interaction between login, register, and home page together
+- Refactor the code inside Router.
+- Make the routeList as an object (as mentioned inside Router).
+- Re-arrange and clean code inside Router.
