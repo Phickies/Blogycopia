@@ -79,19 +79,5 @@ class Helper
     }
 
 
-    /**
-     * Checks if any key in the given associative array starts with a forward slash "/".
-     *
-     * @param array $array The associative array to check.
-     * @return bool True if at least one key starts with "/", otherwise false.
-     */
-    public static function containsROUTERKey(array $array): bool
-    {
-        foreach (array_keys($array) as $key) {
-            if (strpos($key, 'ROUTER') === 0) {  // Check if the key starts with "/"
-                return true;
-            }
-        }
-        return false;
-    }
+
 }
