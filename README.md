@@ -6,4 +6,7 @@ The core is the middle man containing classes of each modules for managing modul
 
 ## TODO
 
-- Add database
+- Add delete, edit user panel
+- Add user-information manager page for each user.
+- Add user-id in each home page.
+
