@@ -6,6 +6,7 @@ namespace Core;
 
 use Exception;
 use Core\View;
+use Core\Router;
 
 
 class Controller
@@ -16,6 +17,22 @@ class Controller
 
     public function __construct()
     {
+    }
+
+
+    public function model(?string $modelClass = null)
+    {
+        if (!$modelClass) {
+            return null;
+        }
+
+        if (class_exists($modelClass)) {
+            return new $modelClass();
+        } else {
+            error_log("Model class '$modelClass' not found.");
+            $router = new Router();
+            $router->handleError(500, "Database not found");
+        }
     }
 
 

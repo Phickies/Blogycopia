@@ -26,7 +26,7 @@
         <button class="toggle-button" onclick="toggleSocialLogin()">Login with Social Account</button>
         
         <a class="register-link" href="/authentication/register">Don't have an account? Register</a>
-        <a class="forgot-password" href="#">Forgot Password?</a>
+        <a class="forgot-password" href="/authentication/login/forgot-password">Forgot Password?</a>
 
         <div class="social-login slide-out">
             <button class="google-login">Login with Google</button>

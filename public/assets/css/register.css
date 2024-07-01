@@ -118,3 +118,11 @@ body {
     background-color: #000;
     color: #fff;
 }
+
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin: 0px;
+    padding: 0px;
+    display: none;
+}

@@ -10,7 +10,7 @@ Helper::loadEnv(BASE_DIR . "configs/.env");
 
 
 // Declare config variable
-$config = [
+return [
 
     "db" => [
         "host" => getenv("DB_HOST"),

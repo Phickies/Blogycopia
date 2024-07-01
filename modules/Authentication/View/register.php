@@ -15,13 +15,19 @@
 <body>
     <div class="register-container">
         <h2>Register</h2>
-        <form class="normal-register" action="/authentication/register" method="POST">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-            <input type="submit" value="Register">
+        <form class="normal-register" action="/authentication/register" method="POST" id="registerForm">
+            <input type="text" name="username" id="username" placeholder="Username" required>
+            <p class="error-message" id="usernameError">Username is required</p>
+            <input type="email" name="email" id="email" placeholder="Email" required>
+            <p class="error-message" id="emailError">Email is required</p>
+            <input type="password" name="password" id="password" placeholder="Password" required>
+            <p class="error-message" id="passwordError">Password is required</p>
+            <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required>
+            <p class="error-message" id="confirmPasswordError">Passwords do not match</p>
+            <input type="submit" value="Register" id="registerButton">
         </form>
+
+        <p style="font-size: small; color: red"><?=$error?></p>
         
         <button class="toggle-button" onclick="toggleSocialRegister()">Register with Social Account</button>
         
