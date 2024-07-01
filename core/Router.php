@@ -120,6 +120,26 @@ class Router
     }
 
 
+    /**
+     * routing to error module Need to be in Error routing.
+     */
+    public function handleError(int $errorCode, string $description)
+    {
+        http_response_code($errorCode);
+
+        try {
+            $errorController = new \App\Error\Controllers\ErrorController();
+            $errorController->displayErrorPage($errorCode, $description);
+        } catch (Exception $e) {
+            echo "Module for displaying error page has error or missing: <br>";
+            echo $e . "<br>";
+            echo $errorCode . "<br>";
+            echo $description;
+        }
+        die();
+    }
+
+
     protected function getRouteList(): RouteList
     {
         return $this->routeList;
@@ -159,26 +179,6 @@ class Router
         } else {
             $moduleRouter->dispatchToModule($nextSegmentURL);
         }
-    }
-
-
-    /**
-     * routing to error module Need to be in Error routing.
-     */
-    private function handleError(int $errorCode, string $description)
-    {
-        http_response_code($errorCode);
-
-        try {
-            $errorController = new \App\Error\Controllers\ErrorController();
-            $errorController->displayErrorPage($errorCode, $description);
-        } catch (Exception $e) {
-            echo "Module for displaying error page has error or missing: <br>";
-            echo $e . "<br>";
-            echo $errorCode . "<br>";
-            echo $description;
-        }
-        die();
     }
 
 

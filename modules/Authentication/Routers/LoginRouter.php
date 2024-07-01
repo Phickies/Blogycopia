@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Authentication\Routers;
 
-use App\Authentication\Controllers\LoginController;
+use App\Authentication\Controllers\AuthenController;
 use Core\Router;
 
 
@@ -20,7 +20,10 @@ class LoginRouter extends Router
 
 
     private function addLink() {
-        $this->linkController(LoginController::class, "/", "GET", "renderLoginPage");
-        $this->linkController(LoginController::class, "/", "POST", "authenticateUser");
+        $this->linkController(AuthenController::class, "/", "GET", "renderLoginPage");
+        $this->linkController(AuthenController::class, "/", "POST", "authenticateUser");
+
+        $this->linkController(AuthenController::class, "/forgot-password", "GET", "renderForgotPasswordPage");
+        $this->linkController(AuthenController::class, "/forgot-password", "POST", "sendCodeToEmail");
     }
 }

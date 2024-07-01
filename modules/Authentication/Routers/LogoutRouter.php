@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Authentication\Routers;
 
-use App\Authentication\Controllers\LogoutController;
+use App\Authentication\Controllers\AuthenController;
 use Core\Router;
 
 
@@ -20,6 +20,6 @@ class LogoutRouter extends Router
 
 
     private function addLink() {
-        $this->linkController(LogoutController::class, "/", "GET", "logout");
+        $this->linkController(AuthenController::class, "/", "GET", "logout");
     }
 }
